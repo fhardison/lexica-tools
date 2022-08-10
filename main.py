@@ -152,24 +152,38 @@ DICT_MAPPINGS = {
     Lexica.ROUSE: load_rouse
 }
 
+NAME_MAPPINGS = {
+    Lexica.AUTENREITH : "Aut",
+    Lexica.LSJ : "LSJ",
+    Lexica.SHORT: "ShortDefs",
+    Lexica.ABBOTT: "A-S", 
+    Lexica.ROUSE: "Rouse"
+}
 
-def load_dicts(targets, default=None):
+
+def load_dicts(targets, default=None, map_names=True):
     """Loads dictionaries specified in `targets` and creates a function that searches them in the order specified"""
     dicts = [(DICT_MAPPINGS[t](), t) for t in targets]
     def finder(x):
         for dict, t in dicts:
             if x in dict:
-                return Right((dict[x], t))
+                if map_names:
+                    return Right((dict[x], NAME_MAPPINGS[t]))
+                else:
+                    return Right((dict[x], t))
         return Left(default)
     return finder
 
 
-def load_dicts_simple(targets, default=None):
+def load_dicts_simple(targets, default=None, map_names=True):
     dicts = [(DICT_MAPPINGS[t](), t) for t in targets]
     def finder(x):
         for dict, t in dicts:
             if x in dict:
-                return (dict[x], t)
+                if map_names:
+                    return (dict[x], NAME_MAPPINGS[t])
+                else:
+                    return (dict[x], t)
         return default
     return finder
 
