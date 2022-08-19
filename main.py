@@ -1,9 +1,11 @@
 from pathlib import Path
 from collections import namedtuple
 import json
+from lxml import etree
 
 
-Lexica = namedtuple("Lexica", "AUTENREITH LSJ ABBOTT SHORT ROUSE")
+
+Lexica = namedtuple("Lexica", "AUTENREITH LSJ ABBOTT SHORT ROUSE DODSON")
 
 
 ROOT = Path(__file__).parent
@@ -12,6 +14,9 @@ AUT = ROOT / Path("aut/dat/grc-aut-defs.dat")
 LSJ = ROOT / Path("lsj/dat/grc-lsj-defs.dat")
 SHORT_DEFS = ROOT / Path("ShortdefsforOKLemma_perseus.txt")
 ROUSE = ROOT / Path("rouse_vocab/vocab.tab")
+DODSON = ROOT / Path("dodson.xml")
+
+
 
 
 class Either():
@@ -85,6 +90,29 @@ class Nothing(Option):
         return False
 
 
+class Try():
+    def __init__(self, f):
+        self.func = f
+    
+    def value(self, default=None):
+        try:
+            return self.func()
+        except:
+            return default
+
+
+def load_dodson():
+    namespaces = {"tei", "{http://www.crosswire.org/2008/TEIOSIS/namespace}"}
+    out = {}
+    dom = etree.parse(DODSON)
+    for entry in dom.findall('.//{http://www.crosswire.org/2008/TEIOSIS/namespace}entry' ):
+        orth = Try(lambda : entry.get('n').split('|')[0].strip()).value()
+        deff = Try(lambda : entry.find('./{http://www.crosswire.org/2008/TEIOSIS/namespace}def[@role="full"]').text).value()
+        if orth:
+            out[orth] = deff
+    return out
+
+
 
 def load_tab(fpath):
     out = {}
@@ -149,7 +177,8 @@ DICT_MAPPINGS = {
     Lexica.LSJ : load_lsj,
     Lexica.SHORT: load_short_defs,
     Lexica.ABBOTT: load_abbot, 
-    Lexica.ROUSE: load_rouse
+    Lexica.ROUSE: load_rouse, 
+    Lexica.DODSON: load_dodson
 }
 
 NAME_MAPPINGS = {
@@ -157,7 +186,8 @@ NAME_MAPPINGS = {
     Lexica.LSJ : "LSJ",
     Lexica.SHORT: "ShortDefs",
     Lexica.ABBOTT: "A-S", 
-    Lexica.ROUSE: "Rouse"
+    Lexica.ROUSE: "Rouse",
+    Lexica.DODSON: "Dodson"
 }
 
 
@@ -188,6 +218,8 @@ def load_dicts_simple(targets, default=None, map_names=True):
     return finder
 
 if __name__ == '__main__':
+    DODSON_DATA = load_dodson()
+    assert DODSON_DATA['Ἀαρών'] == 'Aaron, son of Amram and Jochebed, brother of Moses.'
     ROUSE_DATA = load_rouse()
     assert ROUSE_DATA['ἄβατος'] == 'οὐ παρέχων ἑαυτὸν βαίνειν· οὗ μὴ πάρεστι βαίνειν.'
     print(ROUSE_DATA['ἀγρυπνῶ'])
@@ -200,7 +232,7 @@ if __name__ == '__main__':
     SHORT_DATA = load_short_defs()	
     assert get_from_dict(SHORT_DATA, 'Αἰνόπαρις').value == 'unlucky Paris'
     homeric2 = load_dicts([Lexica.AUTENREITH, Lexica.LSJ])
-    assert homeric2('Σιδών') == Right(('Sidon', Lexica.AUTENREITH))
+    assert homeric2('Σιδών') == Right(('Sidon', 'Aut'))
     print(homeric2('Σιδών').value)
     assert issubclass(Just, Option)
     assert issubclass(Nothing, Option)

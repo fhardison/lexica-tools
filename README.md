@@ -10,10 +10,11 @@ The repo provides 5 different glossing options:
 3. Abbott-Smith NT Greek lexicon
 4. Short Defs from the Perseus Project
 5. Greek to Greek deffinitions from Rouse's A Greek Boy at Home.
+6. Dodson Greek Lexicon
 
 These options are stored in a named tuple named `Lexica`:
 
-`Lexica.AUTENREITH, Lexica.LSJ, Lexica.ABBOTT, Lexica.SHORT, Lexica.ROUSE`
+`Lexica.AUTENREITH, Lexica.LSJ, Lexica.ABBOTT, Lexica.SHORT, Lexica.ROUSE, Lexica.DODSON`
 
 To create a glossing function use either `load_dicts_simple` or `load_dicts` (the monadic version) and supply it a list of the lexicons to check. The order of the lexicons in the list determines the order in which they are checked.
 
@@ -71,6 +72,11 @@ The gloss data in `ShortdefsforOKLemma_perseus.txt` is taken from https://github
 ## Rouse Vocab
 
 The Greek to Greek definitions found in the Rouse vocabulary data are from Rouse's _A Greek Boy At Home_'s Vocabulary which can be found [here](https://github.com/fhardison/rouse-a-greek-boy-at-home)
+
+
+## Dodson
+
+The Dodson lexicon is taken from [here](https://github.com/biblicalhumanities/Dodson-Greek-Lexicon). It is in the public domain.
 
 # License
 
